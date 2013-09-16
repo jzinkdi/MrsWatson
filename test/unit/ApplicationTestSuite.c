@@ -70,6 +70,10 @@ void runApplicationTestSuite(TestEnvironment environment) {
     buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_wav),
     RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
   );
+  runApplicationTest(environment, "Read 32-bit WAV file",
+    buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_32bit_wav),
+    RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
+  );
   runApplicationTest(environment, "Write WAV file",
     buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_pcm),
     RETURN_CODE_SUCCESS, "wav"

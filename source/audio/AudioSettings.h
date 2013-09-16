@@ -42,11 +42,12 @@
 
 typedef struct {
   double sampleRate;
-  unsigned int numChannels;
+  unsigned short numChannels;
   unsigned long blocksize;
-  double tempo;
-  short timeSignatureBeatsPerMeasure;
-  short timeSignatureNoteValue;
+  float tempo;
+  unsigned short bitrate;
+  unsigned short timeSignatureBeatsPerMeasure;
+  unsigned short timeSignatureNoteValue;
 } AudioSettingsMembers;
 
 typedef AudioSettingsMembers* AudioSettings;
@@ -69,7 +70,7 @@ double getSampleRate(void);
  * Get the number of output channels.
  * @return Number of channels
  */
-unsigned int getNumChannels(void);
+unsigned short getNumChannels(void);
 
 /**
  * Give the current block size, which is the number of sample frames sent to the
@@ -82,22 +83,29 @@ unsigned int getNumChannels(void);
 unsigned long getBlocksize(void);
 
 /**
+ * Get the current bitrate, only applicable when an input/output source is raw
+ * PCM data.
+ * @return Bitrate
+ */
+unsigned short getBitrate(void);
+
+/**
  * Get the current tempo, in beats per minute
  * @return Temo in BPM
  */
-double getTempo(void);
+float getTempo(void);
 
 /**
  * Get the current time signature's numerator, the number of beats per measure.
  * @return Time signature numerator
  */
-short getTimeSignatureBeatsPerMeasure(void);
+unsigned short getTimeSignatureBeatsPerMeasure(void);
 
 /**
  * Get the current time signatures denominator, the value of one beat unit.
  * @return Time signature denominator
  */
-short getTimeSignatureNoteValue(void);
+unsigned short getTimeSignatureNoteValue(void);
 
 /**
  * Set the sample rate to be used during processing. This must be set before the
@@ -112,7 +120,7 @@ void setSampleRate(const double sampleRate);
  * input source defines a channel called, it may override this value.
  * @param numChannels Number of channels
  */
-void setNumChannels(const unsigned int numChannels);
+void setNumChannels(const unsigned short numChannels);
 
 /**
  * Set the blocksize to be used during processing. Again this should be called
@@ -122,10 +130,16 @@ void setNumChannels(const unsigned int numChannels);
 void setBlocksize(const unsigned long blocksize);
 
 /**
+ * Set the bitrate to be used during processing.
+ * @param bitrate Bitrate
+ */
+void setBitrate(const unsigned short bitrate);
+
+/**
  * Set tempo to be used during processing.
  * @param tempo Tempo in beats per minute
  */
-void setTempo(const double tempo);
+void setTempo(const float tempo);
 
 /**
  * MIDI files represent tempo in meta events with a three-byte payload. This

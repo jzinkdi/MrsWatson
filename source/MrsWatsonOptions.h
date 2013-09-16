@@ -32,6 +32,7 @@
 
 // Runtime options
 typedef enum {
+  OPTION_BITRATE,
   OPTION_BLOCKSIZE,
   OPTION_CHANNELS,
   OPTION_COLOR_LOGGING,

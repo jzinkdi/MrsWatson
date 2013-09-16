@@ -42,6 +42,7 @@ void initAudioSettings(void) {
   audioSettingsInstance = malloc(sizeof(AudioSettingsMembers));
   audioSettingsInstance->sampleRate = DEFAULT_SAMPLE_RATE;
   audioSettingsInstance->numChannels = DEFAULT_NUM_CHANNELS;
+  audioSettingsInstance->bitrate = DEFAULT_BITRATE;
   audioSettingsInstance->blocksize = DEFAULT_BLOCKSIZE;
   audioSettingsInstance->tempo = DEFAULT_TEMPO;
   audioSettingsInstance->timeSignatureBeatsPerMeasure = DEFAULT_TIMESIG_BEATS_PER_MEASURE;
@@ -59,26 +60,29 @@ double getSampleRate(void) {
   return _getAudioSettings()->sampleRate;
 }
 
-unsigned int getNumChannels(void) {
+unsigned short getNumChannels(void) {
   return _getAudioSettings()->numChannels;
+}
+
+unsigned short getBitrate(void) {
+  return _getAudioSettings()->bitrate;
 }
 
 unsigned long getBlocksize(void) {
   return _getAudioSettings()->blocksize;
 }
 
-double getTempo(void) {
+float getTempo(void) {
   return _getAudioSettings()->tempo;
 }
 
-short getTimeSignatureBeatsPerMeasure(void) {
+unsigned short getTimeSignatureBeatsPerMeasure(void) {
   return _getAudioSettings()->timeSignatureBeatsPerMeasure;
 }
 
-short getTimeSignatureNoteValue(void) {
+unsigned short getTimeSignatureNoteValue(void) {
   return _getAudioSettings()->timeSignatureNoteValue;
 }
-
 
 void setSampleRate(const double sampleRate) {
   if(sampleRate <= 0.0f) {
@@ -89,7 +93,7 @@ void setSampleRate(const double sampleRate) {
   _getAudioSettings()->sampleRate = sampleRate;
 }
 
-void setNumChannels(const unsigned int numChannels) {
+void setNumChannels(const unsigned short numChannels) {
   if(numChannels <= 0) {
     logError("Ignoring attempt to set num channels to %d", numChannels);
     return;
@@ -107,7 +111,21 @@ void setBlocksize(const unsigned long blocksize) {
   _getAudioSettings()->blocksize = blocksize;
 }
 
-void setTempo(const double tempo) {
+void setBitrate(const unsigned short bitrate) {
+  switch(bitrate) {
+    case 16:
+    case 24:
+    case 32:
+      logInfo("Setting bitrate to %ld", bitrate);
+      _getAudioSettings()->bitrate = bitrate;
+      break;
+    default:
+      logError("Ignoring attempt to set invalid bitrate to %d", bitrate);
+      break;
+  }
+}
+
+void setTempo(const float tempo) {
   if(tempo <= 0.0f) {
     logError("Ignoring attempt to set tempo to %f", tempo);
     return;

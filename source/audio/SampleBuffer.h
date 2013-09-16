@@ -80,8 +80,9 @@ boolByte sampleBufferCopy(SampleBuffer self, const SampleBuffer buffer);
  * @param inPcmSamples Array of interlaced samples. Note that the size of the
  * length of this array must match the SampleBuffer's blocksize * channel count,
  * or else undefined behavior will occur.
+ * @parame bitrate Bitrate to use for conversion
  */
-void sampleBufferCopyPcmSamples(SampleBuffer self, const short* inPcmSamples);
+void sampleBufferCopyPcmSamples(SampleBuffer self, const void* inPcmSamples, const unsigned short bitrate);
 
 /**
  * Get an array of interlaced short integer samples from the SampleBuffer. This
@@ -90,11 +91,12 @@ void sampleBufferCopyPcmSamples(SampleBuffer self, const short* inPcmSamples);
  * @param self
  * @param outPcmSamples A pre-allocated array large enough to hold the result of
  * the conversion. This means that at least blocksize * channel count samples
- * must be allocated
+ * must be allocated, also considering bitrate.
  * @param flipEndian True if the output data should have the samples flipped
  * from the native endianness.
+ * @param bitrate Bitrate to use for conversion
  */
-void sampleBufferGetPcmSamples(const SampleBuffer self, short* outPcmSamples, boolByte flipEndian);
+void sampleBufferGetPcmSamples(const SampleBuffer self, void* outPcmSamples, const unsigned short bitrate, boolByte flipEndian);
 
 /**
  * Free all memory used by a SampleBuffer instance

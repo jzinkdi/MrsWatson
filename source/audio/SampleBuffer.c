@@ -25,6 +25,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -129,7 +130,7 @@ boolByte sampleBufferCopy(SampleBuffer self, const SampleBuffer buffer) {
   return true;
 }
 
-void sampleBufferCopyPcmSamples(SampleBuffer self, const short* inPcmSamples) {
+void sampleBufferCopyPcmSamples(SampleBuffer self, const void* inPcmSamples, const unsigned short bitrate) {
   const unsigned int numChannels = self->numChannels;
   const unsigned long numInterlacedSamples = (unsigned long)(numChannels * self->blocksize);
   unsigned int currentInterlacedSample = 0;
@@ -138,33 +139,81 @@ void sampleBufferCopyPcmSamples(SampleBuffer self, const short* inPcmSamples) {
 
   while(currentInterlacedSample < numInterlacedSamples) {
     for(currentChannel = 0; currentChannel < numChannels; ++currentChannel) {
-      Sample convertedSample = (Sample)inPcmSamples[currentInterlacedSample++] / 32767.0f;
-      self->samples[currentChannel][currentDeinterlacedSample] = convertedSample;
+      //Sample convertedSample = (Sample)inPcmSamples[currentInterlacedSample++] / maxValue;
+      //self->samples[currentChannel][currentDeinterlacedSample] = convertedSample;
     }
     ++currentDeinterlacedSample;
   }
 }
 
-void sampleBufferGetPcmSamples(const SampleBuffer self, short* outPcmSamples, boolByte flipEndian) {
-  const size_t blocksize = self->blocksize;
-  const unsigned int numChannels = self->numChannels;
+void _sampleBufferGetPcmSamples16Bit(const SampleBuffer self, void* outPcmSamples,
+  const Sample maxValue, boolByte flipEndian) {
   unsigned int currentInterlacedSample = 0;
   unsigned int currentSample = 0;
   unsigned int currentChannel = 0;
-  short shortValue;
+  short tempShortValue;
+  short* outPcmSamplesShort = (short*)outPcmSamples;
   Sample sample;
 
-  for(currentSample = 0; currentSample < blocksize; ++currentSample) {
-    for(currentChannel = 0; currentChannel < numChannels; ++currentChannel) {
+  for(currentSample = 0; currentSample < self->blocksize; ++currentSample) {
+    for(currentChannel = 0; currentChannel < self->numChannels; ++currentChannel) {
       sample = self->samples[currentChannel][currentSample];
-      shortValue = (short)(sample * 32767.0f);
+      tempShortValue = (short)(sample * maxValue);
       if(flipEndian) {
-        outPcmSamples[currentInterlacedSample++] = flipShortEndian(shortValue);
+        outPcmSamplesShort[currentInterlacedSample++] = flipShortEndian(tempShortValue);
       }
       else {
-        outPcmSamples[currentInterlacedSample++] = shortValue;
+        outPcmSamplesShort[currentInterlacedSample++] = tempShortValue;
       }
     }
+  }
+}
+
+void _sampleBufferGetPcmSamples24Bit(const SampleBuffer self, void* outPcmSamples,
+  const Sample maxValue, boolByte flipEndian) {
+
+}
+
+void _sampleBufferGetPcmSamples32Bit(const SampleBuffer self, void* outPcmSamples,
+  const Sample maxValue, boolByte flipEndian) {
+  unsigned int currentInterlacedSample = 0;
+  unsigned int currentSample = 0;
+  unsigned int currentChannel = 0;
+  int tempIntValue;
+  int* outPcmSamplesInt = (int*)outPcmSamples;
+  // Not declared as Sample because there is a risk of overflow
+  double sample;
+
+  for(currentSample = 0; currentSample < self->blocksize; ++currentSample) {
+    for(currentChannel = 0; currentChannel < self->numChannels; ++currentChannel) {
+      sample = self->samples[currentChannel][currentSample];
+      tempIntValue = (int)(sample * maxValue);
+      if(flipEndian) {
+        outPcmSamplesInt[currentInterlacedSample++] = flipShortEndian(tempIntValue);
+      }
+      else {
+        outPcmSamplesInt[currentInterlacedSample++] = tempIntValue;
+      }
+    }
+  }
+}
+
+void sampleBufferGetPcmSamples(const SampleBuffer self, void* outPcmSamples,
+  const unsigned short bitrate, boolByte flipEndian) {
+  const Sample maxValue = pow(2.0, (long double)(bitrate - 1)) - 1;
+  switch(bitrate) {
+    case 16:
+      _sampleBufferGetPcmSamples16Bit(self, outPcmSamples, maxValue, flipEndian);
+      break;
+    case 24:
+      _sampleBufferGetPcmSamples24Bit(self, outPcmSamples, maxValue, flipEndian);
+      break;
+    case 32:
+      _sampleBufferGetPcmSamples32Bit(self, outPcmSamples, maxValue, flipEndian);
+      break;
+    default:
+      logInternalError("Invalid bitrate passed to sampleBufferGetPcmSamples");
+      break;
   }
 }
 

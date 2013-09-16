@@ -37,7 +37,10 @@ typedef struct {
   boolByte isLittleEndian;
   FILE* fileHandle;
   size_t dataBufferNumItems;
-  short* interlacedPcmDataBuffer;
+  union {
+    short* shorts;
+    int* ints;
+  } interlacedPcmBuffer;
 
   unsigned short numChannels;
   unsigned int sampleRate;

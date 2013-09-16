@@ -76,6 +76,8 @@ static boolByte openSampleSourcePcm(void* sampleSourcePtr, const SampleSourceOpe
 
 size_t sampleSourcePcmRead(SampleSourcePcmData self, SampleBuffer sampleBuffer) {
   size_t pcmSamplesRead = 0;
+  size_t sampleSize = 0;
+  void* sampleData = NULL;
 
   if(self == NULL || self->fileHandle == NULL) {
     logCritical("Corrupt PCM data structure");
@@ -84,13 +86,39 @@ size_t sampleSourcePcmRead(SampleSourcePcmData self, SampleBuffer sampleBuffer) 
 
   if(self->dataBufferNumItems == 0) {
     self->dataBufferNumItems = (size_t)(sampleBuffer->numChannels * sampleBuffer->blocksize);
-    self->interlacedPcmDataBuffer = (short*)malloc(sizeof(short) * self->dataBufferNumItems);
+    switch(self->bitsPerSample) {
+      case 16:
+        self->interlacedPcmBuffer.shorts = (short*)malloc(sizeof(short) * self->dataBufferNumItems);
+        break;
+      case 24:
+      case 32:
+        self->interlacedPcmBuffer.ints = (int*)malloc(sizeof(int) * self->dataBufferNumItems);
+        break;
+      default:
+        logInternalError("Invalid bitrate in sampleSourcePcmRead");
+        return 0;
+    }
+  }
+
+  switch(self->bitsPerSample) {
+    case 16:
+      sampleSize = sizeof(short);
+      sampleData = self->interlacedPcmBuffer.shorts;
+      break;
+    case 24:
+    case 32:
+      sampleSize = sizeof(int);
+      sampleData = self->interlacedPcmBuffer.ints;
+      break;
+    default:
+      logInternalError("Invalid bitrate in sampleSourcePcmRead");
+      return 0;
   }
 
   // Clear the PCM data buffer, or else the last block will have dirty samples in the end
-  memset(self->interlacedPcmDataBuffer, 0, sizeof(short) * self->dataBufferNumItems);
+  memset(sampleData, 0, sampleSize * self->dataBufferNumItems);
 
-  pcmSamplesRead = fread(self->interlacedPcmDataBuffer, sizeof(short), self->dataBufferNumItems, self->fileHandle);
+  pcmSamplesRead = fread(sampleData, sampleSize, self->dataBufferNumItems, self->fileHandle);
   if(pcmSamplesRead < self->dataBufferNumItems) {
     logDebug("End of PCM file reached");
     // Set the blocksize of the sample buffer to be the number of frames read
@@ -98,7 +126,7 @@ size_t sampleSourcePcmRead(SampleSourcePcmData self, SampleBuffer sampleBuffer) 
   }
   logDebug("Read %d samples from PCM file", pcmSamplesRead);
 
-  sampleBufferCopyPcmSamples(sampleBuffer, self->interlacedPcmDataBuffer);
+  sampleBufferCopyPcmSamples(sampleBuffer, sampleData, self->bitsPerSample);
   return pcmSamplesRead;
 }
 
@@ -114,6 +142,8 @@ static boolByte readBlockFromPcmFile(void* sampleSourcePtr, SampleBuffer sampleB
 size_t sampleSourcePcmWrite(SampleSourcePcmData self, const SampleBuffer sampleBuffer) {
   size_t pcmSamplesWritten = 0;
   size_t numSamplesToWrite = (size_t)(sampleBuffer->numChannels * sampleBuffer->blocksize);
+  size_t sampleSize = 0;
+  void* sampleData = NULL;
 
   if(self == NULL || self->fileHandle == NULL) {
     logCritical("Corrupt PCM data structure");
@@ -122,14 +152,40 @@ size_t sampleSourcePcmWrite(SampleSourcePcmData self, const SampleBuffer sampleB
 
   if(self->dataBufferNumItems == 0) {
     self->dataBufferNumItems = (size_t)(sampleBuffer->numChannels * sampleBuffer->blocksize);
-    self->interlacedPcmDataBuffer = (short*)malloc(sizeof(short) * self->dataBufferNumItems);
+    switch(self->bitsPerSample) {
+      case 16:
+        self->interlacedPcmBuffer.shorts = (short*)malloc(sizeof(short) * self->dataBufferNumItems);
+        break;
+      case 24:
+      case 32:
+        self->interlacedPcmBuffer.ints = (int*)malloc(sizeof(int) * self->dataBufferNumItems);
+        break;
+      default:
+        logInternalError("Invalid bitrate in sampleSourcePcmWrite");
+        return 0;
+    }
+  }
+
+  switch(self->bitsPerSample) {
+    case 16:
+      sampleSize = sizeof(short);
+      sampleData = self->interlacedPcmBuffer.shorts;
+      break;
+    case 24:
+    case 32:
+      sampleSize = sizeof(int);
+      sampleData = self->interlacedPcmBuffer.ints;
+      break;
+    default:
+      logInternalError("Invalid bitrate in sampleSourcePcmRead");
+      return 0;
   }
 
   // Clear the PCM data buffer just to be safe
-  memset(self->interlacedPcmDataBuffer, 0, sizeof(short) * self->dataBufferNumItems);
+  memset(sampleData, 0, sampleSize * self->dataBufferNumItems);
 
-  sampleBufferGetPcmSamples(sampleBuffer, self->interlacedPcmDataBuffer, self->isLittleEndian != isHostLittleEndian());
-  pcmSamplesWritten = fwrite(self->interlacedPcmDataBuffer, sizeof(short), numSamplesToWrite, self->fileHandle);
+  sampleBufferGetPcmSamples(sampleBuffer, sampleData, self->bitsPerSample, self->isLittleEndian != isHostLittleEndian());
+  pcmSamplesWritten = fwrite(sampleData, sampleSize, numSamplesToWrite, self->fileHandle);
   if(pcmSamplesWritten < numSamplesToWrite) {
     logWarn("Short write to PCM file");
     return pcmSamplesWritten;
@@ -169,7 +225,17 @@ void sampleSourcePcmSetNumChannels(void* sampleSourcePtr, int numChannels) {
 
 void freeSampleSourceDataPcm(void* sampleSourceDataPtr) {
   SampleSourcePcmData extraData = (SampleSourcePcmData)sampleSourceDataPtr;
-  free(extraData->interlacedPcmDataBuffer);
+  switch(extraData->bitsPerSample) {
+    case 16:
+      free(extraData->interlacedPcmBuffer.shorts);
+      break;
+    case 24:
+    case 32:
+      free(extraData->interlacedPcmBuffer.ints);
+      break;
+    default:
+      break;
+  }
   free(extraData);
 }
 
@@ -193,7 +259,9 @@ SampleSource newSampleSourcePcm(const CharString sampleSourceName) {
   extraData->isLittleEndian = true;
   extraData->fileHandle = NULL;
   extraData->dataBufferNumItems = 0;
-  extraData->interlacedPcmDataBuffer = NULL;
+  // Since this is a union with members of equal sizes (2 pointers), we can just
+  // set one of them to NULL and effectively NULL the entire structure.
+  extraData->interlacedPcmBuffer.ints = NULL;
 
   extraData->numChannels = (unsigned short)getNumChannels();
   extraData->sampleRate = (unsigned int)getSampleRate();

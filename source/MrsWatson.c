@@ -138,13 +138,14 @@ static ReturnCodes buildPluginChain(PluginChain pluginChain, const CharString ar
   return RETURN_CODE_SUCCESS;
 }
 
-static ReturnCodes setupInputSource(SampleSource inputSource) {
+static ReturnCodes setupInputSource(SampleSource inputSource, const unsigned short bitDepth) {
   if(inputSource == NULL) {
     return RETURN_CODE_INVALID_ARGUMENT;
   }
   if(inputSource->sampleSourceType == SAMPLE_SOURCE_TYPE_PCM) {
     sampleSourcePcmSetSampleRate(inputSource, getSampleRate());
     sampleSourcePcmSetNumChannels(inputSource, getNumChannels());
+    sampleSourcePcmSetBitDepth(inputSource, bitDepth);
   }
   if(!inputSource->openSampleSource(inputSource, SAMPLE_SOURCE_OPEN_READ)) {
     logError("Input source '%s' could not be opened", inputSource->sourceName->data);
@@ -236,6 +237,7 @@ int mrsWatsonMain(ErrorReporter errorReporter, int argc, char** argv) {
   boolByte finishedReading = false;
   SampleSource silentSampleInput;
   unsigned long stopFrame;
+  unsigned short bitDepth = DEFAULT_BIT_DEPTH;
   unsigned int i;
 
   initTimer = newTaskTimerWithCString(PROGRAM_NAME, "Initialization");
@@ -347,6 +349,16 @@ int mrsWatsonMain(ErrorReporter errorReporter, int argc, char** argv) {
     option = programOptions->options[i];
     if(option->enabled) {
       switch(option->index) {
+        case OPTION_BIT_DEPTH:
+          if(isValidBitDepth((unsigned short)programOptionsGetNumber(programOptions, OPTION_BIT_DEPTH))) {
+            bitDepth = (unsigned short)programOptionsGetNumber(programOptions, OPTION_BIT_DEPTH);
+            logInfo("Setting bit depth to %ld", bitDepth);
+          }
+          else {
+            logError("Ignoring attempt to set invalid bit depth to %d", bitDepth);
+            return RETURN_CODE_INVALID_ARGUMENT;
+          }
+          break;
         case OPTION_BLOCKSIZE:
           setBlocksize((const unsigned long)programOptionsGetNumber(programOptions, OPTION_BLOCKSIZE));
           break;
@@ -411,7 +423,7 @@ int mrsWatsonMain(ErrorReporter errorReporter, int argc, char** argv) {
   }
 
   printWelcomeMessage(argc, argv);
-  if((result = setupInputSource(inputSource)) != RETURN_CODE_SUCCESS) {
+  if((result = setupInputSource(inputSource, bitDepth)) != RETURN_CODE_SUCCESS) {
     logError("Input source could not be opened, exiting");
     return result;
   }

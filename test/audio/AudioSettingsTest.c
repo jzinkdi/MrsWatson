@@ -61,22 +61,6 @@ static int _testSetInvalidBlocksize(void) {
   return 0;
 }
 
-static int _testSetBitrate(void) {
-  setBitrate(24);
-  assertIntEquals(getBitrate(), 24);
-  return 0;
-}
-
-static int _testSetInvalidBitrate(void) {
-  setBitrate(24);
-  assertIntEquals(getBitrate(), 24);
-  setBitrate(0);
-  assertIntEquals(getBitrate(), 24);
-  setBitrate(15);
-  assertIntEquals(getBitrate(), 24);
-  return 0;
-}
-
 static int _testSetTempo(void) {
   setTempo(123.45);
   assertDoubleEquals(getTempo(), 123.45, TEST_FLOAT_TOLERANCE);
@@ -192,8 +176,6 @@ TestSuite addAudioSettingsTests(void) {
   addTest(testSuite, "SetInvalidNumChannels", _testSetInvalidNumChannels);
   addTest(testSuite, "SetBlocksize", _testSetBlocksize);
   addTest(testSuite, "SetInvalidBlocksize", _testSetInvalidBlocksize);
-  addTest(testSuite, "SetBitrate", _testSetBitrate);
-  addTest(testSuite, "SetInvalidBitrate", _testSetInvalidBitrate);
   addTest(testSuite, "SetTempo", _testSetTempo);
   addTest(testSuite, "SetInvalidTempo", _testSetInvalidTempo);
   addTest(testSuite, "SetTempoWithMidiBytes", _testSetTempoWithMidiBytes);

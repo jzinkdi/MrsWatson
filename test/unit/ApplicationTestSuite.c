@@ -9,11 +9,17 @@ void runApplicationTestSuite(TestEnvironment environment) {
   CharString _a440_mono_pcm = getTestResourceFilename(resourcesPath, "audio", "a440-mono.pcm");
   CharString _a440_stereo_pcm = getTestResourceFilename(resourcesPath, "audio", "a440-stereo.pcm");
   CharString _a440_stereo_wav = getTestResourceFilename(resourcesPath, "audio", "a440-stereo.wav");
+  CharString _a440_stereo_8bit_wav = getTestResourceFilename(resourcesPath, "audio", "a440-stereo-8bit.wav");
+  CharString _a440_stereo_24bit_wav = getTestResourceFilename(resourcesPath, "audio", "a440-stereo-24bit.wav");
+  CharString _a440_stereo_32bit_wav = getTestResourceFilename(resourcesPath, "audio", "a440-stereo-32bit.wav");
   CharString _c_scale_mid = getTestResourceFilename(resourcesPath, "midi", "c-scale.mid");
   CharString _again_test_fxp = getTestResourceFilename(resourcesPath, "presets", "again-test.fxp");
   const char* a440_mono_pcm = _a440_mono_pcm->data;
   const char* a440_stereo_pcm = _a440_stereo_pcm->data;
   const char* a440_stereo_wav = _a440_stereo_wav->data;
+  const char* a440_stereo_8bit_wav = _a440_stereo_8bit_wav->data;
+  const char* a440_stereo_24bit_wav = _a440_stereo_24bit_wav->data;
+  const char* a440_stereo_32bit_wav = _a440_stereo_32bit_wav->data;
   const char* c_scale_mid = _c_scale_mid->data;
   const char* again_test_fxp = _again_test_fxp->data;
 
@@ -64,12 +70,28 @@ void runApplicationTestSuite(TestEnvironment environment) {
     buildTestArgumentString("--plugin again --input \"%s\" --time-signature invalid", a440_stereo_pcm),
     RETURN_CODE_INVALID_ARGUMENT, NULL
   );
+  runApplicationTest(environment, "Read PCM data with invalid bit depth",
+    buildTestArgumentString("--plugin again --input \"%s\" --bit-depth 666", a440_mono_pcm),
+    RETURN_CODE_INVALID_ARGUMENT, NULL
+  );
+
 
   // Audio file types
   runApplicationTest(environment, "Read WAV file",
     buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_wav),
     RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
   );
+  runApplicationTest(environment, "Read 8-bit WAV file",
+    buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_8bit_wav),
+    RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
+  );
+#if 0
+  // Need to generate this file first =/
+  runApplicationTest(environment, "Read 24-bit WAV file",
+    buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_24bit_wav),
+    RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
+  );
+#endif
   runApplicationTest(environment, "Read 32-bit WAV file",
     buildTestArgumentString("--plugin again --input \"%s\"", a440_stereo_32bit_wav),
     RETURN_CODE_SUCCESS, kDefaultTestOutputFileType
@@ -148,6 +170,9 @@ void runApplicationTestSuite(TestEnvironment environment) {
   freeCharString(_a440_mono_pcm);
   freeCharString(_a440_stereo_pcm);
   freeCharString(_a440_stereo_wav);
+  freeCharString(_a440_stereo_8bit_wav);
+  freeCharString(_a440_stereo_24bit_wav);
+  freeCharString(_a440_stereo_32bit_wav);
   freeCharString(_c_scale_mid);
   freeCharString(_again_test_fxp);
 }

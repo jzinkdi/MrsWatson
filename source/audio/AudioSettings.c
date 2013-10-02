@@ -42,7 +42,6 @@ void initAudioSettings(void) {
   audioSettingsInstance = malloc(sizeof(AudioSettingsMembers));
   audioSettingsInstance->sampleRate = DEFAULT_SAMPLE_RATE;
   audioSettingsInstance->numChannels = DEFAULT_NUM_CHANNELS;
-  audioSettingsInstance->bitrate = DEFAULT_BITRATE;
   audioSettingsInstance->blocksize = DEFAULT_BLOCKSIZE;
   audioSettingsInstance->tempo = DEFAULT_TEMPO;
   audioSettingsInstance->timeSignatureBeatsPerMeasure = DEFAULT_TIMESIG_BEATS_PER_MEASURE;
@@ -62,10 +61,6 @@ double getSampleRate(void) {
 
 unsigned short getNumChannels(void) {
   return _getAudioSettings()->numChannels;
-}
-
-unsigned short getBitrate(void) {
-  return _getAudioSettings()->bitrate;
 }
 
 unsigned long getBlocksize(void) {
@@ -109,20 +104,6 @@ void setBlocksize(const unsigned long blocksize) {
   }
   logInfo("Setting blocksize to %ld", blocksize);
   _getAudioSettings()->blocksize = blocksize;
-}
-
-void setBitrate(const unsigned short bitrate) {
-  switch(bitrate) {
-    case 16:
-    case 24:
-    case 32:
-      logInfo("Setting bitrate to %ld", bitrate);
-      _getAudioSettings()->bitrate = bitrate;
-      break;
-    default:
-      logError("Ignoring attempt to set invalid bitrate to %d", bitrate);
-      break;
-  }
 }
 
 void setTempo(const float tempo) {
@@ -195,7 +176,7 @@ boolByte setTimeSignatureFromString(const CharString signature) {
 boolByte setTimeSignatureFromMidiBytes(const byte* bytes) {
   if(bytes != NULL) {
     return setTimeSignatureBeatsPerMeasure(bytes[0]) &&
-      setTimeSignatureNoteValue((short)powl(2, bytes[1]));
+      setTimeSignatureNoteValue((short)pow(2, bytes[1]));
   }
   return false;
 }

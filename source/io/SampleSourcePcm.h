@@ -42,14 +42,21 @@ typedef struct {
     int* ints;
   } interlacedPcmBuffer;
 
+  unsigned short bitDepth;
   unsigned short numChannels;
   unsigned int sampleRate;
-  unsigned short bitsPerSample;
 } SampleSourcePcmDataMembers;
 typedef SampleSourcePcmDataMembers *SampleSourcePcmData;
 
 // TODO: Make private
 SampleSource newSampleSourcePcm(const CharString sampleSourceName);
+
+/**
+ * Check if a given bit depth is supported for use with raw PCM sample sources
+ * @param bitDepth Bit depth
+ * @return True if valid, false otherwise
+ */
+boolByte isValidBitDepth(unsigned short bitDepth);
 
 /**
  * Read raw PCM data to a floating-point sample buffer
@@ -68,13 +75,13 @@ size_t sampleSourcePcmRead(SampleSourcePcmData self, SampleBuffer sampleBuffer);
 size_t sampleSourcePcmWrite(SampleSourcePcmData self, const SampleBuffer sampleBuffer);
 
 /**
- * Set the sample rate to be used for raw PCM file operations. This is most
- * relevant when writing a WAVE or a AIFF file, as the sample rate must be given
- * in the file header.
+ * Set the bit depth to be used for reading raw PCM files. When writing raw PCM
+ * data, a bit depth of 16 is assumed. When reading WAVE or AIFF files, the
+ * provided bit depth from the file container is used instead of this value.
  * @param sampleSourcePtr
- * @param sampleRate Sample rate, in Hertz
+ * @param bitDepth Bit depth (valid values: 8, 16, 24, and 32)
  */
-void sampleSourcePcmSetSampleRate(void* sampleSourcePtr, double sampleRate);
+void sampleSourcePcmSetBitDepth(void* sampleSourcePtr, unsigned short bitDepth);
 
 /**
  * Set the number of channels to be used for raw PCM file operations. Like the
@@ -82,7 +89,16 @@ void sampleSourcePcmSetSampleRate(void* sampleSourcePtr, double sampleRate);
  * @param sampleSourcePtr
  * @param numChannels Number of channels
  */
-void sampleSourcePcmSetNumChannels(void* sampleSourcePtr, int numChannels);
+void sampleSourcePcmSetNumChannels(void* sampleSourcePtr, unsigned short numChannels);
+
+/**
+ * Set the sample rate to be used for raw PCM file operations. This is most
+ * relevant when writing a WAVE or a AIFF file, as the sample rate must be given
+ * in the file header.
+ * @param sampleSourcePtr
+ * @param sampleRate Sample rate, in Hertz
+ */
+void sampleSourcePcmSetSampleRate(void* sampleSourcePtr, double sampleRate);
 
 // TODO: Make private
 void freeSampleSourceDataPcm(void* sampleSourceDataPtr);

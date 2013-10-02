@@ -36,12 +36,12 @@
 ProgramOptions newMrsWatsonOptions(void) {
   ProgramOptions options = newProgramOptions(NUM_OPTIONS);
 
-  programOptionsAdd(options, newProgramOptionWithName(OPTION_BITRATE, "bitrate",
-    "Bitrate to use when reading or writing raw PCM data. If the input source \
-specifies its own bitrate, that value will override the one set by this option. \
-Valid bitrates are: 16, 24, 32",
+  programOptionsAdd(options, newProgramOptionWithName(OPTION_BIT_DEPTH, "bit-depth",
+    "Bit depth to use when reading raw PCM data. If the input source specifies \
+its own bit depth, that value will override the one set by this option. When \
+writing PCM data, 16 bit samples are always used. Valid bitrates are: 8, 16, 24, 32",
     false, kProgramOptionTypeNumber, kProgramOptionArgumentTypeRequired));
-  programOptionsSetNumber(options, OPTION_BITRATE, (int)getBitrate());
+  programOptionsSetNumber(options, OPTION_BIT_DEPTH, DEFAULT_BIT_DEPTH);
 
   programOptionsAdd(options, newProgramOptionWithName(OPTION_BLOCKSIZE, "blocksize",
     "Blocksize in frames to use for processing. If input source is not an even \

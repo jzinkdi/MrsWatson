@@ -151,9 +151,9 @@ SampleSource newSampleSourceAiff(const CharString sampleSourceName) {
   // set one of them to NULL and effectively NULL the entire structure.
   extraData->interlacedPcmBuffer.ints = NULL;
 
+  extraData->bitDepth = DEFAULT_BIT_DEPTH;
   extraData->numChannels = (unsigned short)getNumChannels();
   extraData->sampleRate = (unsigned int)getSampleRate();
-  extraData->bitsPerSample = 16;
 #endif
 
   sampleSource->extraData = extraData;

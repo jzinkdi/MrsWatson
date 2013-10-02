@@ -32,10 +32,10 @@
 #include "base/CharString.h"
 
 #define DEFAULT_SAMPLE_RATE 44100.0f
+#define DEFAULT_BIT_DEPTH 16
 #define DEFAULT_NUM_CHANNELS 2
 #define DEFAULT_BLOCKSIZE 512l
 #define DEFAULT_TIME_DIVISION 96
-#define DEFAULT_BITRATE 16
 #define DEFAULT_TEMPO 120.0f
 #define DEFAULT_TIMESIG_BEATS_PER_MEASURE 4
 #define DEFAULT_TIMESIG_NOTE_VALUE 4
@@ -45,7 +45,6 @@ typedef struct {
   unsigned short numChannels;
   unsigned long blocksize;
   float tempo;
-  unsigned short bitrate;
   unsigned short timeSignatureBeatsPerMeasure;
   unsigned short timeSignatureNoteValue;
 } AudioSettingsMembers;
@@ -81,13 +80,6 @@ unsigned short getNumChannels(void);
  * @return Blocksize, in sample frames
  */
 unsigned long getBlocksize(void);
-
-/**
- * Get the current bitrate, only applicable when an input/output source is raw
- * PCM data.
- * @return Bitrate
- */
-unsigned short getBitrate(void);
 
 /**
  * Get the current tempo, in beats per minute
@@ -128,12 +120,6 @@ void setNumChannels(const unsigned short numChannels);
  * @param blocksize Blocksize in sample frames
  */
 void setBlocksize(const unsigned long blocksize);
-
-/**
- * Set the bitrate to be used during processing.
- * @param bitrate Bitrate
- */
-void setBitrate(const unsigned short bitrate);
 
 /**
  * Set tempo to be used during processing.

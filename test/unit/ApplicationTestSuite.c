@@ -71,7 +71,7 @@ void runApplicationTestSuite(TestEnvironment environment) {
     RETURN_CODE_INVALID_ARGUMENT, NULL
   );
   runApplicationTest(environment, "Read PCM data with invalid bit depth",
-    buildTestArgumentString("--plugin again --input \"%s\" --bit-depth 666", a440_mono_pcm),
+    buildTestArgumentString("--plugin again --input \"%s\" --bit-depth 666", a440_stereo_pcm),
     RETURN_CODE_INVALID_ARGUMENT, NULL
   );
 
